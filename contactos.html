@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Contactos Comerciales</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 800px;
+            overflow: hidden;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30damage;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .add-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 30px;
+        }
+
+        .add-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .contacts-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .contact-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .contact-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .contact-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .contact-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .contact-type {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .contact-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .detail-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 2px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .detail-value {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeInModal 0.3s ease;
+        }
+
+        @keyframes fadeInModal {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            animation: slideUpModal 0.3s ease;
+        }
+
+        @keyframes slideUpModal {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            margin-bottom: 25px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .modal-subtitle {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .step {
+            width: 40px;
+            height: 4px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+
+        .step.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .empty-state-text {
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💼 Contactos Comerciales</h1>
+            <p>Gestiona tus contactos y clientes</p>
+        </div>
+        
+        <div class="content">
+            <button class="add-button" onclick="openModal()">
+                ➕ Añadir Contacto
+            </button>
+            
+            <div id="contactsList" class="contacts-list">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📋</div>
+                    <div class="empty-state-text">No hay contactos registrados</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Paso 1: Información Básica -->
+    <div id="modal1" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Información Básica</h2>
+                <p class="modal-subtitle">Paso 1 de 2: Datos principales del contacto</p>
+            </div>
+            
+            <div class="step-indicator">
+                <div class="step active"></div>
+                <div class="step"></div>
+            </div>
+            
+            <form id="form1">
+                <div class="form-group">
+                    <label class="form-label">Tipo de Persona *</label>
+                    <select class="form-select" id="tipoPersona" required>
+                        <option value="">Seleccione...</option>
+                        <option value="Física">Persona Física</option>
+                        <option value="Jurídica">Persona Jurídica</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Nombre Completo / Razón Social *</label>
+                    <input type="text" class="form-input" id="nombre" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">NIF/CIF *</label>
+                    <input type="text" class="form-input" id="nifcif" required maxlength="12" style="text-transform: uppercase;">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Email *</label>
+                    <input type="email" class="form-input" id="email" required>
+                </div>
+            </form>
+            
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+                <button class="btn btn-primary" onclick="nextStep()">Siguiente</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Paso 2: Información Adicional -->
+    <div id="modal2" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Información Adicional</h2>
+                <p class="modal-subtitle">Paso 2 de 2: Datos complementarios</p>
+            </div>
+            
+            <div class="step-indicator">
+                <div class="step active"></div>
+                <div class="step active"></div>
+            </div>
+            
+            <form id="form2">
+                <div class="form-group">
+                    <label class="form-label">Teléfono *</label>
+                    <input type="tel" class="form-input" id="telefono" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Dirección *</label>
+                    <input type="text" class="form-input" id="direccion" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Ciudad *</label>
+                    <input type="text" class="form-input" id="ciudad" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Código Postal *</label>
+                    <input type="text" class="form-input" id="codigoPostal" required maxlength="5">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Tipo de Relación *</label>
+                    <select class="form-select" id="tipoRelacion" required>
+                        <option value="">Seleccione...</option>
+                        <option value="Cliente">Cliente</option>
+                        <option value="Proveedor">Proveedor</option>
+                        <option value="Cliente y Proveedor">Cliente y Proveedor</option>
+                        <option value="Potencial Cliente">Cliente Potencial</option>
+                        <option value="Socio Comercial">Socio Comercial</option>
+                        <option value="Distribuidor">Distribuidor</option>
+                        <option value="Subcontratista">Subcontratista</option>
+                        <option value="Colaborador">Colaborador</option>
+                    </select>
+                </div>
+            </form>
+            
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="previousStep()">Anterior</button>
+                <button class="btn btn-primary" onclick="saveContact()">Guardar Contacto</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let contacts = [];
+        let currentContact = {};
+
+        function openModal() {
+            currentContact = {};
+            document.getElementById('form1').reset();
+            document.getElementById('form2').reset();
+            document.getElementById('modal1').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modal1').classList.remove('active');
+            document.getElementById('modal2').classList.remove('active');
+            currentContact = {};
+        }
+
+        function nextStep() {
+            const form = document.getElementById('form1');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            // Guardar datos del paso 1
+            currentContact.tipoPersona = document.getElementById('tipoPersona').value;
+            currentContact.nombre = document.getElementById('nombre').value;
+            currentContact.nifcif = document.getElementById('nifcif').value.toUpperCase();
+            currentContact.email = document.getElementById('email').value;
+
+            // Cerrar modal 1 y abrir modal 2
+            document.getElementById('modal1').classList.remove('active');
+            document.getElementById('modal2').classList.add('active');
+        }
+
+        function previousStep() {
+            // Volver al paso 1
+            document.getElementById('modal2').classList.remove('active');
+            document.getElementById('modal1').classList.add('active');
+        }
+
+        function saveContact() {
+            const form = document.getElementById('form2');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            // Guardar datos del paso 2
+            currentContact.telefono = document.getElementById('telefono').value;
+            currentContact.direccion = document.getElementById('direccion').value;
+            currentContact.ciudad = document.getElementById('ciudad').value;
+            currentContact.codigoPostal = document.getElementById('codigoPostal').value;
+            currentContact.tipoRelacion = document.getElementById('tipoRelacion').value;
+            currentContact.id = Date.now(); // ID único basado en timestamp
+            currentContact.fechaCreacion = new Date().toLocaleDateString('es-MX');
+
+            // Agregar el nuevo contacto al principio del array
+            contacts.unshift(currentContact);
+
+            // Actualizar la vista
+            renderContacts();
+
+            // Cerrar modal
+            closeModal();
+
+            // Mostrar mensaje de éxito (opcional)
+            showSuccessMessage();
+        }
+
+        function renderContacts() {
+            const contactsList = document.getElementById('contactsList');
+            
+            if (contacts.length === 0) {
+                contactsList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <div class="empty-state-text">No hay contactos registrados</div>
+                    </div>
+                `;
+                return;
+            }
+
+            contactsList.innerHTML = contacts.map(contact => `
+                <div class="contact-card">
+                    <div class="contact-header">
+                        <div class="contact-name">${contact.nombre}</div>
+                        <div class="contact-type">${contact.tipoPersona}</div>
+                    </div>
+                    <div class="contact-details">
+                        <div class="detail-item">
+                            <span class="detail-label">NIF/CIF</span>
+                            <span class="detail-value">${contact.nifcif}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Email</span>
+                            <span class="detail-value">${contact.email}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Teléfono</span>
+                            <span class="detail-value">${contact.telefono}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Ciudad</span>
+                            <span class="detail-value">${contact.ciudad}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">C.P.</span>
+                            <span class="detail-value">${contact.codigoPostal}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Tipo de Relación</span>
+                            <span class="detail-value">${contact.tipoRelacion}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Fecha de Registro</span>
+                            <span class="detail-value">${contact.fechaCreacion}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showSuccessMessage() {
+            const message = document.createElement('div');
+            message.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 15px 25px;
+                border-radius: 10px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                animation: slideInRight 0.5s ease;
+                z-index: 2000;
+            `;
+            message.innerHTML = '✅ Contacto agregado exitosamente';
+            document.body.appendChild(message);
+
+            setTimeout(() => {
+                message.style.animation = 'fadeOut 0.5s ease';
+                setTimeout(() => message.remove(), 500);
+            }, 3000);
+        }
+
+        // Cerrar modal al hacer clic fuera de él
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                closeModal();
+            }
+        }
+
+        // Validación de NIF/CIF en tiempo real
+        document.getElementById('nifcif').addEventListener('input', function(e) {
+            e.target.value = e.target.value.toUpperCase();
+        });
+
+        // Animaciones CSS adicionales
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInRight {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            
+            @keyframes fadeOut {
+                from {
+                    opacity: 1;
+                }
+                to {
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Inicializar con algunos contactos de ejemplo (opcional - puedes comentar esto si quieres empezar vacío)
+        contacts = [
+            {
+                id: 1,
+                tipoPersona: 'Física',
+                nombre: 'Juan Pérez González',
+                nifcif: '12345678Z',
+                email: 'juan.perez@email.com',
+                telefono: '609-123-456',
+                direccion: 'Calle Mayor 123',
+                ciudad: 'Madrid',
+                codigoPostal: '28001',
+                tipoRelacion: 'Cliente',
+                fechaCreacion: '15/11/2024'
+            },
+            {
+                id: 2,
+                tipoPersona: 'Jurídica',
+                nombre: 'Tech Solutions S.L.',
+                nifcif: 'B12345678',
+                email: 'contacto@techsolutions.es',
+                telefono: '913-456-789',
+                direccion: 'Avenida de la Tecnología 456',
+                ciudad: 'Barcelona',
+                codigoPostal: '08001',
+                tipoRelacion: 'Proveedor',
+                fechaCreacion: '14/11/2024'
+            }
+        ];
+        
+        // Renderizar contactos iniciales
+        renderContacts();
+    </script>
+</body>
+</html>
