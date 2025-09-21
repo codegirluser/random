@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contactos de Facturación</title>
+    <style>
+        /* Estilos base - mantener los existentes */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        /* Botón añadir contacto */
+        .btn-add {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .btn-add:hover {
+            background-color: #45a049;
+        }
+
+        /* Tabla de contactos */
+        .contacts-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .contacts-table th,
+        .contacts-table td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .contacts-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        .contacts-table tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        /* Modal overlay */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: block;
+        }
+
+        /* Modal content */
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            z-index: 1001;
+            display: none;
+        }
+
+        .modal.active {
+            display: block;
+        }
+
+        .modal h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        /* Indicador de pasos */
+        .steps-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .step {
+            width: 50px;
+            height: 4px;
+            background: #ddd;
+            margin: 0 5px;
+            border-radius: 2px;
+        }
+
+        .step.active {
+            background: #4CAF50;
+        }
+
+        /* Formulario */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        /* Botones del modal */
+        .modal-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-cancel {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .btn-cancel:hover {
+            background-color: #da190b;
+        }
+
+        .btn-next,
+        .btn-save {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .btn-next:hover,
+        .btn-save:hover {
+            background-color: #45a049;
+        }
+
+        .btn-back {
+            background-color: #808080;
+            color: white;
+        }
+
+        .btn-back:hover {
+            background-color: #666666;
+        }
+
+        /* Mensaje de éxito */
+        .success-message {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 4px;
+            display: none;
+            animation: slideIn 0.5s;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Gestión de Contactos de Facturación</h1>
+        
+        <button class="btn-add" onclick="abrirModal()">Añadir Contacto</button>
+        
+        <div id="contactsContainer">
+            <table class="contacts-table" id="contactsTable" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>Nombre/Razón Social</th>
+                        <th>RFC</th>
+                        <th>Tipo</th>
+                        <th>Email</th>
+                        <th>Teléfono</th>
+                        <th>Ciudad</th>
+                        <th>CP</th>
+                        <th>Uso CFDI</th>
+                    </tr>
+                </thead>
+                <tbody id="contactsTableBody">
+                </tbody>
+            </table>
+            
+            <div id="emptyMessage" class="empty-message">
+                No hay contactos registrados. Haz clic en "Añadir Contacto" para comenzar.
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Overlay -->
+    <div class="modal-overlay" id="modalOverlay"></div>
+
+    <!-- Modal Paso 1: Información Básica -->
+    <div class="modal" id="modalPaso1">
+        <h2>Información Básica del Contacto</h2>
+        
+        <div class="steps-indicator">
+            <div class="step active"></div>
+            <div class="step"></div>
+        </div>
+        
+        <form id="formPaso1">
+            <div class="form-group">
+                <label for="tipoPersona">Tipo de Persona *</label>
+                <select id="tipoPersona" required>
+                    <option value="">Seleccione...</option>
+                    <option value="Física">Persona Física</option>
+                    <option value="Moral">Persona Moral</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="nombre">Nombre/Razón Social *</label>
+                <input type="text" id="nombre" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="rfc">RFC *</label>
+                <input type="text" id="rfc" required maxlength="13" style="text-transform: uppercase;">
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Correo Electrónico *</label>
+                <input type="email" id="email" required>
+            </div>
+        </form>
+        
+        <div class="modal-buttons">
+            <button class="btn btn-cancel" onclick="cerrarModal()">Cancelar</button>
+            <button class="btn btn-next" onclick="siguientePaso()">Siguiente</button>
+        </div>
+    </div>
+
+    <!-- Modal Paso 2: Información Adicional -->
+    <div class="modal" id="modalPaso2">
+        <h2>Información Adicional</h2>
+        
+        <div class="steps-indicator">
+            <div class="step active"></div>
+            <div class="step active"></div>
+        </div>
+        
+        <form id="formPaso2">
+            <div class="form-group">
+                <label for="telefono">Teléfono *</label>
+                <input type="tel" id="telefono" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="direccion">Dirección *</label>
+                <input type="text" id="direccion" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="ciudad">Ciudad *</label>
+                <input type="text" id="ciudad" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="codigoPostal">Código Postal *</label>
+                <input type="text" id="codigoPostal" required maxlength="5" pattern="[0-9]{5}">
+            </div>
+            
+            <div class="form-group">
+                <label for="usoCfdi">Uso de CFDI *</label>
+                <select id="usoCfdi" required>
+                    <option value="">Seleccione...</option>
+                    <option value="G01">G01 - Adquisición de mercancías</option>
+                    <option value="G02">G02 - Devoluciones, descuentos o bonificaciones</option>
+                    <option value="G03">G03 - Gastos en general</option>
+                    <option value="I01">I01 - Construcciones</option>
+                    <option value="I02">I02 - Mobiliario y equipo de oficina</option>
+                    <option value="I03">I03 - Equipo de transporte</option>
+                    <option value="I04">I04 - Equipo de cómputo</option>
+                    <option value="I05">I05 - Dados, troqueles, moldes</option>
+                    <option value="I06">I06 - Comunicaciones telefónicas</option>
+                    <option value="I07">I07 - Comunicaciones satelitales</option>
+                    <option value="I08">I08 - Otra maquinaria y equipo</option>
+                    <option value="D01">D01 - Honorarios médicos y gastos hospitalarios</option>
+                    <option value="D02">D02 - Gastos médicos por incapacidad</option>
+                    <option value="P01">P01 - Por definir</option>
+                </select>
+            </div>
+        </form>
+        
+        <div class="modal-buttons">
+            <button class="btn btn-back" onclick="pasoAnterior()">Anterior</button>
+            <button class="btn btn-save" onclick="guardarContacto()">Guardar Contacto</button>
+        </div>
+    </div>
+
+    <!-- Mensaje de éxito -->
+    <div class="success-message" id="successMessage">
+        ✅ Contacto agregado exitosamente
+    </div>
+
+    <script>
+        // Array para almacenar los contactos
+        let contactos = [];
+        let contactoTemporal = {};
+
+        // Función para abrir el modal
+        function abrirModal() {
+            // Limpiar formularios
+            document.getElementById('formPaso1').reset();
+            document.getElementById('formPaso2').reset();
+            contactoTemporal = {};
+            
+            // Mostrar overlay y primer modal
+            document.getElementById('modalOverlay').classList.add('active');
+            document.getElementById('modalPaso1').classList.add('active');
+        }
+
+        // Función para cerrar todos los modales
+        function cerrarModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+            document.getElementById('modalPaso1').classList.remove('active');
+            document.getElementById('modalPaso2').classList.remove('active');
+            contactoTemporal = {};
+        }
+
+        // Función para ir al siguiente paso
+        function siguientePaso() {
+            const form = document.getElementById('formPaso1');
+            
+            // Validar formulario
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            // Guardar datos del paso 1
+            contactoTemporal.tipoPersona = document.getElementById('tipoPersona').value;
+            contactoTemporal.nombre = document.getElementById('nombre').value;
+            contactoTemporal.rfc = document.getElementById('rfc').value.toUpperCase();
+            contactoTemporal.email = document.getElementById('email').value;
+            
+            // Ocultar paso 1 y mostrar paso 2
+            document.getElementById('modalPaso1').classList.remove('active');
+            document.getElementById('modalPaso2').classList.add('active');
+        }
+
+        // Función para volver al paso anterior
+        function pasoAnterior() {
+            document.getElementById('modalPaso2').classList.remove('active');
+            document.getElementById('modalPaso1').classList.add('active');
+        }
+
+        // Función para guardar el contacto
+        function guardarContacto() {
+            const form = document.getElementById('formPaso2');
+            
+            // Validar formulario
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            // Completar datos del contacto
+            contactoTemporal.telefono = document.getElementById('telefono').value;
+            contactoTemporal.direccion = document.getElementById('direccion').value;
+            contactoTemporal.ciudad = document.getElementById('ciudad').value;
+            contactoTemporal.codigoPostal = document.getElementById('codigoPostal').value;
+            contactoTemporal.usoCfdi = document.getElementById('usoCfdi').value;
+            contactoTemporal.id = Date.now();
+            contactoTemporal.fechaCreacion = new Date().toLocaleDateString('es-MX');
+            
+            // Agregar el contacto AL PRINCIPIO del array
+            contactos.unshift(contactoTemporal);
+            
+            // Actualizar la tabla
+            actualizarTabla();
+            
+            // Cerrar modal
+            cerrarModal();
+            
+            // Mostrar mensaje de éxito
+            mostrarMensajeExito();
+        }
+
+        // Función para actualizar la tabla de contactos
+        function actualizarTabla() {
+            const tbody = document.getElementById('contactsTableBody');
+            const table = document.getElementById('contactsTable');
+            const emptyMessage = document.getElementById('emptyMessage');
+            
+            if (contactos.length === 0) {
+                table.style.display = 'none';
+                emptyMessage.style.display = 'block';
+                return;
+            }
+            
+            table.style.display = 'table';
+            emptyMessage.style.display = 'none';
+            
+            // Limpiar tabla
+            tbody.innerHTML = '';
+            
+            // Agregar filas
+            contactos.forEach(contacto => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${contacto.nombre}</td>
+                    <td>${contacto.rfc}</td>
+                    <td>${contacto.tipoPersona}</td>
+                    <td>${contacto.email}</td>
+                    <td>${contacto.telefono}</td>
+                    <td>${contacto.ciudad}</td>
+                    <td>${contacto.codigoPostal}</td>
+                    <td>${contacto.usoCfdi}</td>
+                `;
+            });
+        }
+
+        // Función para mostrar mensaje de éxito
+        function mostrarMensajeExito() {
+            const mensaje = document.getElementById('successMessage');
+            mensaje.classList.add('show');
+            
+            setTimeout(() => {
+                mensaje.classList.remove('show');
+            }, 3000);
+        }
+
+        // Convertir RFC a mayúsculas automáticamente
+        document.getElementById('rfc').addEventListener('input', function(e) {
+            e.target.value = e.target.value.toUpperCase();
+        });
+
+        // Cerrar modal al hacer clic en el overlay
+        document.getElementById('modalOverlay').addEventListener('click', function() {
+            cerrarModal();
+        });
+
+        // Inicializar tabla vacía
+        actualizarTabla();
+    </script>
+</body>
+</html>
